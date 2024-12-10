@@ -44,6 +44,6 @@ contract TestVotation is Test{
         require(voter != address(0));
         vm.prank(voter);
         election.vote(candidate);
-        assertEq(candidate, election.checkWinner());
+        assertEq(candidate, election.getWinner());
     }
 }

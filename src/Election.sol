@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity >=0.8.0;
 
 contract Election {
@@ -15,6 +16,8 @@ contract Election {
     event Vote(address voter, address candidate);
 
     address[] public s_candidates;
+    address private s_winner;
+    uint256 private s_maxVotes;
 
     constructor(address[] memory candidates) {
 
@@ -51,21 +54,20 @@ contract Election {
         s_candidateVotes[candidate]++;
 
         emit Vote(msg.sender, candidate);
+
+        updateWinner(candidate);
     }
 
-    function checkWinner() external view returns(address) {
+    function updateWinner(address candidate) internal {
 
-        address winner;
-        uint256 maxVotes = 0;
-        for (uint256 i = 0; i < s_candidates.length; i++) {
-            uint256 currentVotes = s_candidateVotes[s_candidates[i]];
-            if (currentVotes > maxVotes) {
-                maxVotes = currentVotes;
-                winner = s_candidates[i];
-            }
-        }
+        if (s_candidateVotes[candidate] > s_maxVotes) { 
+            s_maxVotes = s_candidateVotes[candidate]; s_winner = candidate; 
+        } 
 
-        return winner;
+    }
+    
+    function getWinner() external view returns(address) {
+        return s_winner;
     }
 
     function getIsCandidate(address candidate) external view returns(bool) {
