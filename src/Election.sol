@@ -61,11 +61,21 @@ contract Election {
     function updateWinner(address candidate) internal {
 
         if (s_candidateVotes[candidate] > s_maxVotes) { 
-            s_maxVotes = s_candidateVotes[candidate]; s_winner = candidate; 
+            s_maxVotes = s_candidateVotes[candidate];
+            s_winner = candidate; 
         } 
 
     }
-    
+
+    function getResults() external view returns(address[] memory, uint256[] memory) {
+        
+        uint256[] memory votes = new uint256[](s_candidates.length);
+        for (uint256 i = 0; i < s_candidates.length; i++) {
+            votes[i] = s_candidateVotes[s_candidates[i]];
+        }
+
+        return (s_candidates, votes);
+    }
     function getWinner() external view returns(address) {
         return s_winner;
     }
