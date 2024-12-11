@@ -18,9 +18,10 @@ contract TestVotation is Test{
 
     address[] candidates = [candidate1, candidate2, candidate3, candidate4, candidate5, candidate6];
 
+    address owner = 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720;
 
     function setUp() public {
-        election = new Election(candidates);
+        election = new Election(candidates, owner);
     }
 
     // Proves Vote
@@ -46,4 +47,13 @@ contract TestVotation is Test{
         election.vote(candidate);
         assertEq(candidate, election.getWinner());
     }
+
+    function testAdd(address candidate) public{
+        vm.assume(candidate != address(0));
+        vm.prank(0xa0Ee7A142d267C1f36714E4a8F75612F20a79720);
+        election.addCandidate(candidate);
+        election.vote(candidate);
+        assertEq(candidate, election.getWinner());
+    }
+
 }
