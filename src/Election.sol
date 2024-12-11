@@ -4,21 +4,37 @@ pragma solidity >=0.8.0;
 
 contract Election {
 
+    /*//////////////////////////////////////////////////////////////
+                                 EVENTS
+    //////////////////////////////////////////////////////////////*/
+
+    event Vote(address voter, address candidate);
+
+    /*//////////////////////////////////////////////////////////////
+                             ERRORS
+    //////////////////////////////////////////////////////////////*/
+
     error VoterAlreadyVoted(address voter);
     error CandidateDoesntExist(address candidate);
     error NoCandidates();
     error CandidateIsAddressZero();
     error SenderIsAddressZero();
 
+    /*//////////////////////////////////////////////////////////////
+                             STORAGE VARIABLES
+    //////////////////////////////////////////////////////////////*/
+
     mapping(address => bool) private s_hasVoted;
     mapping(address => uint256) private s_candidateVotes;
     mapping(address => bool) private s_isCandidate;
 
-    event Vote(address voter, address candidate);
-
     address[] public s_candidates;
     address private s_winner;
     uint256 private s_maxVotes;
+
+    /*//////////////////////////////////////////////////////////////
+                               CONSTRUCTOR
+    //////////////////////////////////////////////////////////////*/
 
     constructor(address[] memory candidates) {
 
@@ -36,6 +52,10 @@ contract Election {
 
         s_candidates = candidates;
     }
+
+    /*//////////////////////////////////////////////////////////////
+                            ELECTION LOGIC
+    //////////////////////////////////////////////////////////////*/
 
     function vote(address candidate) external {
 
