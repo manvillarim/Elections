@@ -2,13 +2,14 @@
 
 pragma solidity >=0.8.0;
 
-contract Election {
+contract Election{
 
     /*//////////////////////////////////////////////////////////////
                                  EVENTS
     //////////////////////////////////////////////////////////////*/
 
     event Vote(address voter, address candidate);
+    event AddCandidate(address candidate);
 
     /*//////////////////////////////////////////////////////////////
                              ERRORS
@@ -19,6 +20,7 @@ contract Election {
     error NoCandidates();
     error CandidateIsAddressZero();
     error SenderIsAddressZero();
+    error SenderIsNotOwner();
 
     /*//////////////////////////////////////////////////////////////
                              STORAGE VARIABLES
@@ -30,17 +32,24 @@ contract Election {
 
     address[] public s_candidates;
     address private s_winner;
+    address private s_owner;
     uint256 private s_maxVotes;
 
     /*//////////////////////////////////////////////////////////////
                                CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
 
-    constructor(address[] memory candidates) {
+    constructor(address[] memory candidates, address owner) {
 
         if (candidates.length <= 0) {
             revert NoCandidates();
         }
+
+        if(owner == address(0)) {
+            revert SenderIsAddressZero();
+        }
+
+        s_owner = owner;
 
         for (uint256 i = 0; i < candidates.length; i++) {
             if(candidates[i] == address(0)) {
@@ -53,22 +62,47 @@ contract Election {
         s_candidates = candidates;
     }
 
+
+    /*//////////////////////////////////////////////////////////////
+                            MODIFIERS
+    //////////////////////////////////////////////////////////////*/
+    
+    modifier safeCandidate(address candidate) {
+
+        if (!s_isCandidate[candidate]) {
+            revert CandidateDoesntExist(candidate);
+        }
+
+        if(candidate == address(0)) {
+            revert CandidateIsAddressZero();
+        }
+        _;
+    }
+
+    modifier safeSender() {
+        
+        if(msg.sender == address(0)) {
+            revert SenderIsAddressZero();
+        }
+        _;
+
+    }
+
+    modifier onlyOwner() {
+        if(msg.sender != s_owner) {
+            revert SenderIsNotOwner();
+        }
+        _;
+    }
+
     /*//////////////////////////////////////////////////////////////
                             ELECTION LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function vote(address candidate) external {
-
-        if(msg.sender == address(0)) {
-            revert SenderIsAddressZero();
-        }
+    function vote(address candidate) external safeCandidate(candidate) safeSender() {
 
         if (s_hasVoted[msg.sender]) {
             revert VoterAlreadyVoted(msg.sender);
-        }
-
-        if (!s_isCandidate[candidate]) {
-            revert CandidateDoesntExist(candidate);
         }
 
         s_hasVoted[msg.sender] = true;
@@ -79,14 +113,17 @@ contract Election {
         updateWinner(candidate);
     }
 
-    function updateWinner(address candidate) internal {
+    function addCandidate(address candidate) external safeCandidate(candidate) onlyOwner{
+        s_isCandidate[candidate] = true;
+        s_candidateVotes[candidate] = 0;
+        s_candidates.push(candidate);
 
-        if (s_candidateVotes[candidate] > s_maxVotes) { 
-            s_maxVotes = s_candidateVotes[candidate];
-            s_winner = candidate; 
-        } 
-
+        emit AddCandidate(candidate);
     }
+
+    /*//////////////////////////////////////////////////////////////
+                            GETTERS
+    //////////////////////////////////////////////////////////////*/
 
     function getResults() external view returns(address[] memory, uint256[] memory) {
         
@@ -111,5 +148,18 @@ contract Election {
 
     function getVotes(address candidate) external view returns(uint256) {
         return s_candidateVotes[candidate];
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                            INTERNAL LOGIC
+    //////////////////////////////////////////////////////////////*/
+
+    function updateWinner(address candidate) internal {
+
+        if (s_candidateVotes[candidate] > s_maxVotes) { 
+            s_maxVotes = s_candidateVotes[candidate];
+            s_winner = candidate; 
+        } 
+
     }
 }
