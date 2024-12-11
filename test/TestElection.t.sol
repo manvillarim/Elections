@@ -56,4 +56,13 @@ contract TestVotation is Test{
         assertEq(candidate, election.getWinner());
     }
 
+    function testFailVoteManyTimes(address candidate, address sender) public {
+        candidate = 0x70997970C51812dc3A010C7d01b50e0d17dc79C8;
+        vm.assume(candidate != address(0));
+        vm.assume(candidate != address(0));
+        vm.prank(sender);
+        election.vote(candidate);
+        vm.prank(sender);
+        election.vote(candidate);
+    }
 }
