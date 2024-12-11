@@ -4,10 +4,11 @@ pragma solidity >=0.8.0;
 
 contract Election {
 
-    error Have__Voted(address voter);
-    error Candidate__Doesnt__Exist(address candidate);
-    error No__Candidates();
-    error None__Address();
+    error VoterAlreadyVoted(address voter);
+    error CandidateDoesntExist(address candidate);
+    error NoCandidates();
+    error CandidateIsAddressZero();
+    error SenderIsAddressZero();
 
     mapping(address => bool) private s_hasVoted;
     mapping(address => uint256) private s_candidateVotes;
@@ -22,12 +23,12 @@ contract Election {
     constructor(address[] memory candidates) {
 
         if (candidates.length <= 0) {
-            revert No__Candidates();
+            revert NoCandidates();
         }
 
         for (uint256 i = 0; i < candidates.length; i++) {
             if(candidates[i] == address(0)) {
-                revert None__Address();
+                revert CandidateIsAddressZero();
             }
             s_isCandidate[candidates[i]] = true;
             s_candidateVotes[candidates[i]] = 0;
@@ -39,15 +40,15 @@ contract Election {
     function vote(address candidate) external {
 
         if(msg.sender == address(0)) {
-            revert None__Address();
+            revert SenderIsAddressZero();
         }
 
         if (s_hasVoted[msg.sender]) {
-            revert Have__Voted(msg.sender);
+            revert VoterAlreadyVoted(msg.sender);
         }
 
         if (!s_isCandidate[candidate]) {
-            revert Candidate__Doesnt__Exist(candidate);
+            revert CandidateDoesntExist(candidate);
         }
 
         s_hasVoted[msg.sender] = true;
