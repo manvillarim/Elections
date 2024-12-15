@@ -3,7 +3,7 @@
 pragma solidity >= 0.8.0;
 
 import {Test} from "forge-std/Test.sol";
-import {Election} from "../src/Election.sol";
+import {Election} from "../../src/Election.sol";
 
 contract TestVotation is Test{
     
@@ -21,7 +21,7 @@ contract TestVotation is Test{
     address owner = 0xa0Ee7A142d267C1f36714E4a8F75612F20a79720;
 
     function setUp() public {
-        election = new Election(candidates, owner);
+        election = new Election(candidates, 1567890);
     }
 
     // Proves Vote

@@ -155,7 +155,11 @@ contract Election{
         updateWinner(candidate);
     }
 
-    function addCandidate(address candidate) external onlyOwner safeCandidate(candidate) onlyBeforeElection{
+    function addCandidate(address candidate) external onlyOwner onlyBeforeElection(){
+        
+        if(candidate == address(0)) {
+            revert CandidateIsAddressZero();
+        }
         
         s_isCandidate[candidate] = true;
         s_candidateVotes[candidate] = 0;
